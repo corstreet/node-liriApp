@@ -1,4 +1,4 @@
-console.log('this is loaded');
+console.log('\nInitializing Credentials...');
 
 exports.spotify = {
   id: process.env.SPOTIFY_ID,
