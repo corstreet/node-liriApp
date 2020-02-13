@@ -7,6 +7,7 @@ var Spotify = require("node-spotify-api");
 //bring in spotify creds and initialize
 var keys = require("./keys.js");
 var spotify = new Spotify(keys.spotify);
+var OMDBkey = keys.OMDB.key;
 
 //store song as string
 var serviceRequested = process.argv[2];
@@ -18,13 +19,14 @@ sortAndRunService(serviceRequested);
 function sortAndRunService(serviceRequested){
   switch (serviceRequested) {
     case "spotify-this-song": 
-      searchSpotifyForSong(userInput);
+      //if user forgot to choose a song, we'll use 'The Sign' by Ace of Base
+      userInput ? searchSpotifyForSong(userInput) : searchSpotifyForSong("The Sign");
       break;
     case "concert-this":
       console.log("concert-this");
       break;
     case "movie-this":
-      console.log("movie-this");
+      searchMovie(userInput);
       break;
     case "do-what-it-says":
       console.log("do-what-it-says");
@@ -40,8 +42,42 @@ function sortAndRunService(serviceRequested){
       break;
   }
 }
+//OMDB movie search function
+function searchMovie(movieToSearch){
+  //return results for 'Mr Nobody' if no movie entered
+  if (!movieToSearch) {
+    var movieToSearch = "Mr Nobody";
+  }
+  //build query url
+  var url = `http://www.omdbapi.com/?apikey=${OMDBkey}&t=${movieToSearch}`;
+  //axios
+  axios.get(url)
+    .then(res => {
+      //store response data
+      var movie = res.data;
+      var title = movie.Title;
+      var year = movie.Year;
+      var imdbRating = movie.imdbRating;
+      var rtRating = movie.Ratings[1].Value;
+      var country = movie.Country;
+      var language = movie.Language;
+      var plot = movie.Plot;
+      var actors = movie.Actors;
+      //log some info about the matched movie
+      console.log(
+        "\nTitle: " + title,
+        "\nYear: " + year,
+        "\nIMDB Rating: " + imdbRating,
+        "\nRotten Tomatoes Rating: " + rtRating,
+        "\nFilmed In: " + country,
+        "\nLanguage(s): " + language,
+        "\nPlot: " + plot,
+        "\nActors: " + actors,
+      )
+    })
+    .catch(err => console.log(err))
+}
 
-//create an initial POC that can search spotify just by providing the song arg
 //spotify-this-song search function
 function searchSpotifyForSong(songToSearch){
   spotify.search({ type: 'track', query: songToSearch }, function (err, res) {
@@ -69,4 +105,5 @@ function searchSpotifyForSong(songToSearch){
     })
   });
 }
+
 
